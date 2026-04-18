@@ -10,6 +10,7 @@ from fastapi.responses import FileResponse
 from app.webhook import router as webhook_router
 from app.admin import router as admin_router
 from app.chat import router as chat_router
+from app.feedback import router as feedback_router
 from config.settings import PORT
 
 Path("data/logs").mkdir(parents=True, exist_ok=True)
@@ -37,6 +38,7 @@ _STATIC = Path(__file__).parent / "static"
 app.include_router(webhook_router)
 app.include_router(admin_router)
 app.include_router(chat_router)
+app.include_router(feedback_router)
 
 # PWA static files
 app.mount("/app", StaticFiles(directory=str(_STATIC / "app"), html=True), name="pwa")

@@ -18,13 +18,8 @@ class ChatRequest(BaseModel):
 @router.post("/api/chat")
 async def chat(req: ChatRequest):
     chunks = search(req.message)
-
-    if not chunks:
-        response_text = FALLBACK_MESSAGE
-    else:
-        history = await get_history(req.session_id)
-        system, question = build_prompt(req.message, chunks, history)
-        response_text = ask(system, question)
-
+    history = await get_history(req.session_id)
+    system, question = build_prompt(req.message, chunks, history)
+    response_text = ask(system, question)
     await add(req.session_id, req.message, response_text)
     return {"response": response_text}

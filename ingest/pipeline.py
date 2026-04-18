@@ -49,4 +49,6 @@ def run_ingestion(reset: bool = True) -> None:
 
 
 if __name__ == "__main__":
-    run_ingestion()
+    import sys
+    append = "--append" in sys.argv
+    run_ingestion(reset=not append)
