@@ -4,7 +4,6 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 
 from app.webhook import router as webhook_router
 from app.admin import router as admin_router
@@ -22,16 +21,11 @@ logging.basicConfig(
 
 app = FastAPI(title="Mentor AN", version="0.2.0", docs_url=None, redoc_url=None)
 
+# Routes first, static mount last
 app.include_router(webhook_router)
 app.include_router(admin_router)
 
-static_path = Path(__file__).parent / "static"
-app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
-
-
-@app.get("/admin")
-async def admin_page():
-    return FileResponse(str(static_path / "admin.html"))
+app.mount("/static", StaticFiles(directory=str(Path(__file__).parent / "static")), name="static")
 
 
 @app.get("/health")

@@ -1,5 +1,7 @@
 import logging
+from pathlib import Path
 from fastapi import APIRouter, HTTPException, Header
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from config.settings import ADMIN_TOKEN
@@ -10,6 +12,13 @@ from db.client import insert_chunks, delete_chunks_by_source, get_all_sources
 
 router = APIRouter(prefix="/admin")
 log = logging.getLogger(__name__)
+
+_STATIC = Path(__file__).parent / "static"
+
+
+@router.get("")
+async def admin_page():
+    return FileResponse(str(_STATIC / "admin.html"))
 
 
 def _auth(token: str | None) -> None:
