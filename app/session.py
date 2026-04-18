@@ -1,34 +1,16 @@
-from db.client import get_client
+from db.client import async_count_sessions, async_get_history, async_insert_session
 from config.settings import MAX_HISTORY
 
 
-def is_new(phone: str) -> bool:
-    db = get_client()
-    result = (
-        db.table("sessions")
-        .select("id", count="exact")
-        .eq("phone", phone)
-        .limit(1)
-        .execute()
-    )
-    return result.count == 0
+async def is_new(phone: str) -> bool:
+    count = await async_count_sessions(phone)
+    return count == 0
 
 
-def get_history(phone: str) -> list[dict]:
-    """Return last MAX_HISTORY * 2 messages as [{user, assistant}] pairs."""
-    db = get_client()
-    result = (
-        db.table("sessions")
-        .select("role, content")
-        .eq("phone", phone)
-        .order("created_at", desc=True)
-        .limit(MAX_HISTORY * 2)
-        .execute()
-    )
+async def get_history(phone: str) -> list[dict]:
+    rows = await async_get_history(phone, limit=MAX_HISTORY * 2)
+    rows = list(reversed(rows))
 
-    rows = list(reversed(result.data or []))
-
-    # Pair user+assistant turns
     history: list[dict] = []
     i = 0
     while i < len(rows) - 1:
@@ -37,13 +19,11 @@ def get_history(phone: str) -> list[dict]:
             i += 2
         else:
             i += 1
-
     return history
 
 
-def add(phone: str, user_msg: str, assistant_msg: str) -> None:
-    db = get_client()
-    db.table("sessions").insert([
+async def add(phone: str, user_msg: str, assistant_msg: str) -> None:
+    await async_insert_session([
         {"phone": phone, "role": "user",      "content": user_msg},
         {"phone": phone, "role": "assistant", "content": assistant_msg},
-    ]).execute()
+    ])

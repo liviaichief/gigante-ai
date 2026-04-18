@@ -6,7 +6,7 @@ from fastapi import APIRouter, Request, HTTPException
 from app import session
 from app.whatsapp import send_text
 from config.persona import FALLBACK_MESSAGE, WELCOME_MESSAGE
-from db.client import get_client
+from db.client import async_insert_log
 from rag.retriever import search
 from rag.prompt_builder import build_prompt
 from rag.llm_client import ask
@@ -40,19 +40,6 @@ def _parse_evolution(payload: dict) -> tuple[str, str] | None:
         return None
 
 
-def _log_conversation(phone: str, question: str, chunks: list[dict], latency_ms: int) -> None:
-    try:
-        get_client().table("conversation_logs").insert({
-            "phone_suffix": phone[-4:],
-            "question": question[:500],
-            "sources": [c["source"] for c in chunks],
-            "had_fallback": not chunks,
-            "latency_ms": latency_ms,
-        }).execute()
-    except Exception as e:
-        log.warning("Failed to write log: %s", e)
-
-
 @router.post("/webhook")
 async def webhook(request: Request):
     try:
@@ -67,7 +54,7 @@ async def webhook(request: Request):
     phone, message = parsed
     t0 = time.monotonic()
 
-    if session.is_new(phone):
+    if await session.is_new(phone):
         await send_text(phone, WELCOME_MESSAGE)
 
     chunks = search(message)
@@ -75,19 +62,25 @@ async def webhook(request: Request):
     if not chunks:
         response_text = FALLBACK_MESSAGE
     else:
-        history = session.get_history(phone)
+        history = await session.get_history(phone)
         system, question = build_prompt(message, chunks, history)
         response_text = ask(system, question)
 
     await send_text(phone, response_text)
-    session.add(phone, message, response_text)
+    await session.add(phone, message, response_text)
 
     latency_ms = round((time.monotonic() - t0) * 1000)
-    _log_conversation(phone, message, chunks, latency_ms)
 
-    log.info(
-        "handled phone=...%s fallback=%s latency_ms=%d",
-        phone[-4:], not chunks, latency_ms,
-    )
+    try:
+        await async_insert_log({
+            "phone_suffix": phone[-4:],
+            "question": message[:500],
+            "sources": [c["source"] for c in chunks],
+            "had_fallback": not chunks,
+            "latency_ms": latency_ms,
+        })
+    except Exception:
+        pass
 
+    log.info("handled phone=...%s fallback=%s latency_ms=%d", phone[-4:], not chunks, latency_ms)
     return {"status": "ok"}

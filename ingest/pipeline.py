@@ -1,35 +1,31 @@
 """
 Run with:  python -m ingest.pipeline
-Indexes all .txt files from data/transcripts/ into Supabase pgvector.
 """
 from ingest.loader import load_transcripts
 from ingest.chunker import chunk_text
 from ingest.embedder import generate_embeddings
-from db.client import get_client
+from db.client import insert_chunks, delete_all_chunks
 
 BATCH_SIZE = 50
 
 
 def run_ingestion(reset: bool = True) -> None:
-    print("\n=== Mentor AN — Ingestion Pipeline (Supabase) ===\n")
-
-    db = get_client()
+    print("\n=== Mentor AN — Ingestion Pipeline ===\n")
 
     if reset:
-        db.table("chunks").delete().neq("id", "00000000-0000-0000-0000-000000000000").execute()
-        print("Cleared existing chunks.\n")
+        delete_all_chunks()
+        print("Chunks anteriores removidos.\n")
 
     documents = load_transcripts()
     if not documents:
-        print("⚠️  No .txt files found in data/transcripts/")
-        print("Add your transcript files and run again.\n")
+        print("⚠️  Nenhum .txt em data/transcripts/")
         return
 
     total_chunks = 0
 
     for doc in documents:
         chunks = chunk_text(doc["content"])
-        print(f"  → {doc['source']}: {len(chunks)} chunks")
+        print(f"  + {doc['source']}: {len(chunks)} chunks")
 
         for batch_start in range(0, len(chunks), BATCH_SIZE):
             batch = chunks[batch_start : batch_start + BATCH_SIZE]
@@ -45,12 +41,11 @@ def run_ingestion(reset: bool = True) -> None:
                 }
                 for j, (text, embedding) in enumerate(zip(batch, embeddings))
             ]
-
-            db.table("chunks").insert(rows).execute()
+            insert_chunks(rows)
 
         total_chunks += len(chunks)
 
-    print(f"\n✅ Done: {len(documents)} file(s), {total_chunks} chunks indexed.\n")
+    print(f"\n✅ Concluído: {len(documents)} arquivo(s), {total_chunks} chunks indexados.\n")
 
 
 if __name__ == "__main__":
