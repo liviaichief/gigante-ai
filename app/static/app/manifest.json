@@ -1,0 +1,17 @@
+{
+  "name": "DNA de Gigante",
+  "short_name": "DNA Gigante",
+  "description": "Mentor virtual baseado no conteúdo de André Nunes",
+  "start_url": "/app",
+  "display": "standalone",
+  "background_color": "#131313",
+  "theme_color": "#E42319",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%23131313'/><text x='50%25' y='55%25' font-size='100' text-anchor='middle' dominant-baseline='middle' fill='%23E42319' font-family='Arial Black,sans-serif' font-weight='900'>G</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}

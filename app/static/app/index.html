@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#E42319"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="DNA Gigante"/>
+<title>DNA DE GIGANTE — Mentor</title>
+<link rel="manifest" href="/app/manifest.json"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "surface": "#131313",
+        "surface-low": "#1b1b1b",
+        "surface-container": "#1f1f1f",
+        "surface-high": "#2a2a2a",
+        "surface-highest": "#353535",
+        "surface-lowest": "#0e0e0e",
+        "surface-bright": "#393939",
+        "primary": "#E42319",
+        "primary-light": "#ffb4a9",
+        "on-surface": "#e2e2e2",
+        "on-surface-variant": "#ae8882",
+        "outline": "#5d3f3b",
+      },
+      fontFamily: {
+        headline: ["Space Grotesk", "sans-serif"],
+        body: ["Inter", "sans-serif"],
+      }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+
+  body {
+    background-color: #131313;
+    background-image: radial-gradient(#2a2a2a 1px, transparent 1px);
+    background-size: 20px 20px;
+    font-family: Inter, sans-serif;
+    color: #e2e2e2;
+  }
+
+  .chat-scroll::-webkit-scrollbar { width: 3px; }
+  .chat-scroll::-webkit-scrollbar-track { background: transparent; }
+  .chat-scroll::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 4px; }
+
+  .msg-bubble { animation: fadeUp 0.2s ease-out; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .typing-dot {
+    width: 7px; height: 7px; background: #ae8882;
+    border-radius: 50%; display: inline-block;
+    animation: bounce 1.2s infinite ease-in-out;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
+  }
+
+  .send-btn {
+    background: linear-gradient(135deg, #ff6b5b 0%, #E42319 100%);
+    box-shadow: 0 0 20px rgba(228,35,25,0.35);
+  }
+  .send-btn:active { transform: scale(0.93); }
+
+  .msg-sent {
+    background: linear-gradient(135deg, #ffb4a9 0%, #E42319 100%);
+    color: #fff;
+  }
+
+  textarea { line-height: 1.4; }
+  textarea:focus { outline: none; }
+
+  .disclaimer {
+    font-size: 11px;
+    color: #5d3f3b;
+    text-align: center;
+    padding: 6px 16px;
+    letter-spacing: 0.02em;
+  }
+
+  strong { font-weight: 700; }
+  em { font-style: italic; }
+</style>
+</head>
+<body class="flex flex-col" style="height:100dvh">
+
+<!-- HEADER -->
+<header class="shrink-0 flex items-center gap-3 px-4 py-3 bg-[#131313] border-b border-[#2a2a2a] z-50"
+        style="box-shadow: 0 4px 20px rgba(228,35,25,0.08)">
+  <div class="flex items-center gap-3 flex-1">
+    <img id="avatar"
+         src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzNxETf7QOiQUd-9TTi7Xqo0IyzzMrJCnbA6okO6Egk4EWc1t43pbasS0nQCmxxdJ-oH0YIXu3GpPHexWio1qJ9eQ41R2r7hf-5GQGVL2u7aXI_6DVt_vNFNyimgPDDY1DRoML9A75X49UNkoVJO9MRtnmO5-7JXDanoiMSOnYdAG_DP04RtfDbaNxTkRJYKibstQPh8qmyAOHXLsuk2E1hhUbx5lPDUI6ZAZmLC-a4jTL_3SzJPXHy8FYPPoUDMXw0UPG4beV800v"
+         alt="Mentor"
+         class="w-10 h-10 rounded-full object-cover border border-[#2a2a2a]"
+         onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect width=%2240%22 height=%2240%22 fill=%22%231f1f1f%22 rx=%2220%22/><text x=%2250%25%22 y=%2255%25%22 font-size=%2220%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 fill=%22%23E42319%22 font-family=%22Arial Black%22 font-weight=%22900%22>G</text></svg>'"/>
+    <div>
+      <h1 class="font-headline font-black text-[#E42319] text-base uppercase tracking-tight leading-none">DNA DE GIGANTE</h1>
+      <div class="flex items-center gap-1 mt-0.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>
+        <span class="text-[11px] text-on-surface-variant font-medium">Mentor Online</span>
+      </div>
+    </div>
+  </div>
+  <button onclick="clearChat()" title="Nova conversa"
+          class="text-on-surface-variant hover:text-on-surface transition-colors p-1">
+    <span class="material-symbols-outlined text-[22px]">edit_square</span>
+  </button>
+</header>
+
+<!-- CHAT AREA -->
+<main id="chat" class="flex-1 overflow-y-auto chat-scroll px-4 py-4 flex flex-col gap-3">
+
+  <!-- Date divider -->
+  <div class="flex justify-center my-2">
+    <span class="bg-surface-high text-on-surface-variant text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">
+      Hoje
+    </span>
+  </div>
+
+  <!-- Welcome message (static) -->
+  <div class="flex justify-start msg-bubble" id="welcome-msg">
+    <div class="bg-surface-high rounded-xl rounded-tl-sm px-4 py-3 max-w-[85%] sm:max-w-[70%] border border-surface-highest/40">
+      <p class="text-on-surface text-sm leading-relaxed">
+        Bem-vindo ao <strong>DNA de Gigante</strong>.<br>
+        Sou uma IA treinada com o conteúdo público de André Nunes.<br><br>
+        Pergunte sobre <strong>vendas, mentalidade, disciplina ou crescimento</strong>.
+      </p>
+      <div class="flex justify-end mt-1">
+        <span class="text-[10px] text-on-surface-variant" id="welcome-time"></span>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- DISCLAIMER -->
+<div class="disclaimer shrink-0">IA inspirada no conteúdo público de André Nunes — não é o mentor real</div>
+
+<!-- INPUT BAR -->
+<div class="shrink-0 bg-surface-lowest border-t border-[#2a2a2a] px-3 py-2 pb-safe">
+  <div class="flex items-end gap-2 max-w-2xl mx-auto">
+    <div class="flex-1 bg-surface-high rounded-xl border border-outline/20 focus-within:border-primary/40 transition-colors flex items-end px-3 py-2 gap-2">
+      <textarea id="input"
+        class="flex-1 bg-transparent border-none focus:ring-0 text-on-surface resize-none text-sm placeholder-on-surface-variant max-h-28 min-h-[24px]"
+        placeholder="Mensagem"
+        rows="1"
+        onkeydown="handleKey(event)"
+        oninput="autoResize(this)"></textarea>
+    </div>
+    <button id="send-btn" onclick="sendMessage()"
+      class="send-btn w-12 h-12 rounded-xl flex items-center justify-center text-white shrink-0 transition-transform">
+      <span class="material-symbols-outlined text-[22px]" id="send-icon">send</span>
+    </button>
+  </div>
+</div>
+
+<script>
+const API = "/api/chat";
+let sessionId = localStorage.getItem("dna_session_id");
+if (!sessionId) {
+  sessionId = "web_" + crypto.randomUUID();
+  localStorage.setItem("dna_session_id", sessionId);
+}
+
+// Set welcome time
+document.getElementById("welcome-time").textContent = now();
+
+function now() {
+  return new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+}
+
+function autoResize(el) {
+  el.style.height = "auto";
+  el.style.height = Math.min(el.scrollHeight, 112) + "px";
+}
+
+function handleKey(e) {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function scrollBottom() {
+  const chat = document.getElementById("chat");
+  chat.scrollTo({ top: chat.scrollHeight, behavior: "smooth" });
+}
+
+function renderText(text) {
+  return text
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+    .replace(/\n/g, "<br>");
+}
+
+function addMessage(text, type) {
+  const chat = document.getElementById("chat");
+  const t = now();
+  const div = document.createElement("div");
+  div.className = "flex msg-bubble " + (type === "sent" ? "justify-end" : "justify-start");
+
+  if (type === "sent") {
+    div.innerHTML = `
+      <div class="msg-sent rounded-xl rounded-tr-sm px-4 py-3 max-w-[85%] sm:max-w-[70%]">
+        <p class="text-sm leading-relaxed font-medium">${renderText(text)}</p>
+        <div class="flex justify-end items-center gap-1 mt-1">
+          <span class="text-[10px] text-white/70">${t}</span>
+          <span class="material-symbols-outlined text-[13px] text-white/70" style="font-variation-settings:'FILL' 1">done_all</span>
+        </div>
+      </div>`;
+  } else {
+    div.innerHTML = `
+      <div class="bg-surface-high rounded-xl rounded-tl-sm px-4 py-3 max-w-[85%] sm:max-w-[70%] border border-surface-highest/40">
+        <p class="text-on-surface text-sm leading-relaxed">${renderText(text)}</p>
+        <div class="flex justify-end mt-1">
+          <span class="text-[10px] text-on-surface-variant">${t}</span>
+        </div>
+      </div>`;
+  }
+
+  chat.appendChild(div);
+  scrollBottom();
+}
+
+function addTyping() {
+  const chat = document.getElementById("chat");
+  const div = document.createElement("div");
+  div.id = "typing";
+  div.className = "flex justify-start msg-bubble";
+  div.innerHTML = `
+    <div class="bg-surface-high rounded-xl rounded-tl-sm px-4 py-3 border border-surface-highest/40 flex items-center gap-1">
+      <span class="typing-dot"></span>
+      <span class="typing-dot"></span>
+      <span class="typing-dot"></span>
+    </div>`;
+  chat.appendChild(div);
+  scrollBottom();
+}
+
+function removeTyping() {
+  document.getElementById("typing")?.remove();
+}
+
+function setLoading(loading) {
+  const btn = document.getElementById("send-btn");
+  const icon = document.getElementById("send-icon");
+  const input = document.getElementById("input");
+  btn.disabled = loading;
+  icon.textContent = loading ? "hourglass_empty" : "send";
+  input.disabled = loading;
+}
+
+async function sendMessage() {
+  const input = document.getElementById("input");
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = "";
+  input.style.height = "auto";
+  addMessage(text, "sent");
+  setLoading(true);
+  addTyping();
+
+  try {
+    const res = await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text, session_id: sessionId })
+    });
+
+    if (!res.ok) throw new Error("Erro " + res.status);
+    const data = await res.json();
+    removeTyping();
+    addMessage(data.response, "received");
+  } catch (err) {
+    removeTyping();
+    addMessage("Não consegui processar sua mensagem agora. Tente novamente.", "received");
+  } finally {
+    setLoading(false);
+    input.focus();
+  }
+}
+
+function clearChat() {
+  if (!confirm("Iniciar nova conversa?")) return;
+  sessionId = "web_" + crypto.randomUUID();
+  localStorage.setItem("dna_session_id", sessionId);
+  const chat = document.getElementById("chat");
+  // remove all messages except divider and welcome
+  const msgs = chat.querySelectorAll(".msg-bubble:not(#welcome-msg)");
+  msgs.forEach(m => m.remove());
+}
+
+// Register service worker
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/app/sw.js").catch(() => {});
+}
+
+// Focus input on load
+window.addEventListener("load", () => {
+  document.getElementById("input").focus();
+});
+</script>
+</body>
+</html>
