@@ -1,9 +1,11 @@
 """
-Fetch and clean YouTube transcripts.
-Supports: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/shorts/ID
+Fetch YouTube transcripts using youtube-transcript-api >= 0.6.x
 """
 import re
-from youtube_transcript_api import YouTubeTranscriptApi, NoTranscriptFound, TranscriptsDisabled
+from youtube_transcript_api import YouTubeTranscriptApi
+from youtube_transcript_api._errors import NoTranscriptFound, TranscriptsDisabled
+
+_api = YouTubeTranscriptApi()
 
 
 def _extract_video_id(url: str) -> str | None:
@@ -21,33 +23,38 @@ def _extract_video_id(url: str) -> str | None:
 
 def fetch_transcript(url: str) -> dict:
     """
-    Returns {"video_id", "title", "content"} or raises ValueError.
-    Tries Portuguese first, then English, then any available language.
+    Returns {"video_id", "title", "content", "source", "url"} or raises ValueError.
+    Tries pt-BR > pt > en > any available language.
     """
     video_id = _extract_video_id(url)
     if not video_id:
-        raise ValueError(f"Could not extract video ID from URL: {url}")
+        raise ValueError(f"Não foi possível extrair o ID do vídeo: {url}")
 
     try:
-        transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
-
-        # Priority: pt-BR > pt > en > any
-        transcript = None
-        for lang in ["pt-BR", "pt", "en"]:
+        # Try preferred languages first
+        entries = None
+        for langs in [["pt-BR", "pt"], ["en"], None]:
             try:
-                transcript = transcript_list.find_transcript([lang])
+                if langs:
+                    entries = _api.fetch(video_id, languages=langs)
+                else:
+                    # Fallback: list available and pick first
+                    available = _api.list(video_id)
+                    first = next(iter(available), None)
+                    if first:
+                        entries = _api.fetch(video_id, languages=[first.language_code])
                 break
-            except Exception:
+            except (NoTranscriptFound, Exception):
                 continue
 
-        if transcript is None:
-            transcript = transcript_list.find_generated_transcript(
-                [t.language_code for t in transcript_list]
-            )
+        if not entries:
+            raise ValueError("Nenhuma transcrição disponível para este vídeo.")
 
-        entries = transcript.fetch()
-        text = " ".join(entry["text"] for entry in entries)
+        text = " ".join(e.text for e in entries)
         text = re.sub(r"\s+", " ", text).strip()
+
+        if len(text) < 100:
+            raise ValueError("Transcrição muito curta ou vazia.")
 
         return {
             "video_id": video_id,
@@ -57,5 +64,7 @@ def fetch_transcript(url: str) -> dict:
             "url": url,
         }
 
-    except (NoTranscriptFound, TranscriptsDisabled) as e:
-        raise ValueError(f"No transcript available for {video_id}: {e}")
+    except (TranscriptsDisabled, Exception) as e:
+        if isinstance(e, ValueError):
+            raise
+        raise ValueError(f"Erro ao buscar transcrição: {str(e)}")
